@@ -1,0 +1,43 @@
+#.htaccess for eduadmin
+# hide the special files
+<FilesMatch "\.(htaccess|access|ini|phps|fla|psd|log|sh|do)$">
+  Order Allow,Deny
+  Deny from all
+</FilesMatch>
+
+#set header to allow for CORS requests
+Header set Access-Control-Allow-Origin "*"
+
+#hide server signature
+ServerSignature Off
+
+#prevent listing of folder contents
+IndexIgnore *
+
+#mandatory https for the folder
+SSLRequireSSL
+
+#protect against DOS attacks by limiting file upload size
+LimitRequestBody 1024000
+
+#turn on errors for this folder
+php_flag display_startup_errors on
+php_flag display_errors on
+php_flag html_errors on
+php_flag log_errors on
+
+# Need to create the mod-rewrite section for all the AJAX api calls
+#
+AcceptPathInfo On
+#<Files user.add>
+#	ForceType application/x-httpd-php
+#</Files>
+RewriteEngine On
+RewriteCond  %{HTTP_HOST}  ^griffis.edumedia.ca
+#Add a rule for each api page
+RewriteRule ^review/get/$ /mad9022/reviewr/get-review.php
+RewriteRule ^review/set/$ /mad9022/reviewr/set-review.php
+RewriteRule ^reviews/get/$ /mad9022/reviewr/get-reviews.php
+
+# https://griffis.edumedia.ca/mad9022/reviewr/reviews/get/
+# https://griffis.edumedia.ca/mad9022/reviewr/get-reviews.php

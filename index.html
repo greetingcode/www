@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">-->
+        <!-- this one is required -->
+        <meta name="format-detection" content="telephone=no">
+        <meta name="msapplication-tap-highlight" content="no">
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+        <!-- this one is required -->
+        <link rel="stylesheet" type="text/css" href="css/index.css">
+        <title>Cordova Assignment 1</title>
+    </head>
+    <body>
+    <!-- list page -->
+        <section data-role="page" id="list" class="active-page">
+            <ul class="list-view" id="target">
+                <li class="loading blink">Loading...</li>
+            </ul>
+        </section>
+
+    <!-- add page -->
+        <section data-role="page" id="add" class="inactive-page">
+            <h1>Add your review!</h1>
+            <!--<p class="button-wrapper">-->
+            <div class="button-wrapper">
+                <button id="btn">Take Pic</button>
+            </div>
+            <!--</p>-->
+            <img src="" alt="" id="image">
+            <div class="form-wrapper">
+            <form action="">
+                <ul class="form">
+                    <li class = title>
+                        <label for="title" class="title_label">Title</label>
+                        <input type="text" name="title" id="title">
+                    </li>
+                    <li class = "rating">
+                        <label for="rating" class="title_label">Rating</label>
+                        <div class="acidjs-rating-stars" id="rating">
+                                <input type="radio" name="group-1" id="group-1-0" value="5" class="star"/><label for="group-1-0"></label>
+                                <input type="radio" name="group-1" id="group-1-1" value="4" class="star" /><label for="group-1-1"></label>
+                                <input type="radio" name="group-1" id="group-1-2" value="3" class="star" /><label for="group-1-2"></label>
+                                <input type="radio" name="group-1" id="group-1-3" value="2" class="star" /><label for="group-1-3"></label>
+                                <input type="radio" name="group-1" id="group-1-4" value="1" class="star" /><label for="group-1-4"></label>
+                        </div>
+                    </li>
+                    <li class="review_text">
+                        <label for="review_text" class="title_label">Review</label>
+                        <input type="text" name="review_text" id="review_text">
+                    </li>
+                </ul>
+            </form>
+            </div>
+        </section>
+
+    <!-- review details -->
+        <section data-role="page" id="details" class="inactive-page">
+        </section>
+        <nav>
+            <a href="#list" class="page-link" id="nav_list"><img src="" alt="" class="icon">List</a>
+            <a href="#add" class="page-link" id="nav_add"><img src="" alt="" class="icon">Add</a>
+            <a href="" class="page-link hidden" id="nav_cancel"><img src="" alt="" class="icon">Cancel</a>
+            <a class="page-link hidden" id="nav_submit"><img src="" alt="" class="icon">Submit</a>
+        </nav>
+        <!-- those two script tags are default by the Cordova platform -->
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
+    </body>
+</html>
