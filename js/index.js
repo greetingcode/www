@@ -34,69 +34,70 @@ var app = {
   load: function() {
     app.loadCount++;
 
-    // if hammerjs is loaded
+    //***************************************************** hammerjs loaded
     if (app.loadCount === 1) {
+
+      //***************************************************** nav tabs interactions
       var tabs = document.querySelectorAll('.page-link');
       [].forEach.call(tabs, function(obj) {
         var hammer1 = new Hammer(obj);
-        hammer1.on('tap', app.navigate); // adding event listeners to nav tabs.
+        hammer1.on('tap', app.navigate);                                          // adding event listeners to nav tabs.
       });
 
-      var cameraButton = document.querySelector("#btn"); // event listener to button for taking a picture
+      //***************************************************** camera button interactions
+      var cameraButton = document.querySelector("#btn");
       cameraButton.addEventListener("click", app.callCamera);
 
+      //***************************************************** submit button interactions
       var submit = document.querySelector('#nav_submit');
-      //var submit = document.querySelector('#nav_submit');
       submit.addEventListener('click', app.addReview);
 
 
-      //var inputStar = document.querySelectorAll('span.star');
-      //inputStar.addEventListener('click', function() {alert('1122');});
-
-
-
-      app.image = document.querySelector('#image'); // for deploying an image on add_page after a picture is taken.
-
+      app.image = document.querySelector('#image');                               // for deploying an image on add_page after a picture is taken.
       app.uuid = 4242;
       //***** THIS SHOULD BE UUID FOR THE SERVER WHEN RUN ON A DEVICE
       //app.uuid = device.uuid;                                     // unique id for each device. It becomes a key to the server data exchange
 
-      var params = new FormData(); // parameter container for communicating with the server
+      var params = new FormData();                                                // parameter container for communicating with the server
       params.append('uuid', app.uuid);
 
-      app.ajaxCall(app.urlGetAllReviews, params, app.gotReviewList, app.ajaxErr); // ajax call
+      app.ajaxCall(app.urlGetAllReviews,
+                   params,
+                   app.gotReviewList,
+                   app.ajaxErr);                                                  // ajax call
     }
   },
 
-  // from hammer1.on('tap', app.navigate)
+  ///////////////////////// from hammer1.on('tap', app.navigate)
+  // PAGE TRANSITION PART
   navigate: function(ev) {
     var previous = document.querySelector('.active-page').id;
     ev.preventDefault();
     var btn = ev.target;
     var href = btn.href;
     var id = href.split('#')[1];
-    //app.previousPage = href;
 
-    // page transition part
+    //****************************************************** page transition part
     var nextPage = document.getElementById(id);
     var prePage = document.getElementById(previous);
     console.log(previous);
     console.log('it was previous');
     console.log(nextPage);
-    // validation
+
+    // VALIDATION
+                        // when 'add' button is clicked
     if (nextPage.id === 'add') {
       var navList = document.querySelector('#nav_list');
       var navAdd = document.querySelector('#nav_add');
       var navCancel = document.querySelector('#nav_cancel');
       var navSubmit = document.querySelector('#nav_submit');
-      //navList.className = 'hidden';
+
       navList.classList.add('hidden');
-      //navAdd.className = 'hidden';
       navAdd.classList.add('hidden');
       navCancel.classList.remove('hidden');
       navSubmit.classList.remove('hidden');
     }
-
+                        // active-page, inactive-page transition; the actual page transition part
     if (nextPage.className !== 'active-page') {
       nextPage.className = 'active-page';
       if (previous.className !== 'inactive-page') {
@@ -114,7 +115,8 @@ var app = {
     xhr.send(formData);
   },
 
-  // from app.ajaxCall(.., .., app.gotReviewList, app.ajaxErr)
+  ///////////////////////// from app.ajaxCall(.., .., app.gotReviewList, app.ajaxErr)
+  // REVIEW LIST DATA RECEPTION PART
   gotReviewList: function(ev) {
 
     var xhr = ev.target;
@@ -123,78 +125,88 @@ var app = {
       var data = JSON.parse(xhr.responseText);
       if (data.code == 0) {
 
-        var list = document.querySelector('#list'); // <section id="list">
-        list.innerHTML = '<table class="list-view"></table>'; // creating a table and removing the loading txt
-        var reviews = data.reviews;
+        var list = document.querySelector('#list');                                               // list page; <section id="list">
+        list.innerHTML = '<table class="list-view"></table>';                                     // creating a table and removing the loading txt
 
-        if (reviews.length > 0) { // we have previous review(s)
+        // VALIDATION: have previous review(s)?
+        var reviews = data.reviews;
+        if (reviews.length > 0) {
 
           console.log("We have existing reviews: " + data.message);
-          app.displayList(data); // display the review list
+          app.displayList(data);                                                                  // display the review list
         } else {
+          // FAILED
 
           console.log("no existing reviews: " + data.message);
-          // create a single list item and display the default message
-          var tr = document.createElement("tr");
+          var tr = document.createElement("tr");                                                  // create a single list item and display the default message
           tr.className = "loading";
           tr.setAttribute("data-review", 0);
           tr.textContent = data.message;
           list.appendChild(tr);
         }
-      } else { // Did not get zero from PHP = NOT OK!
+      } else {
+        // FAILED
         app.ajaxErr(data);
       }
-    } else { // xhr Status Error
+    } else {
+      // FAILED; xhr Status Error
       app.ajaxErr({
         "message": "Invalid HTTP Response"
       });
     }
   },
 
+  // AJAX ERROR
   ajaxErr: function(err) {
 
     console.log(err.message);
     document.querySelector('section').innerHTML = 'Oops, an error occurred!';
   },
 
-  // from app.displayList(data)
+  ///////////////////////// from app.displayList(data)
+  // REVIEW LIST DISPLAY PART
   displayList: function(obj) {
     var reviews = obj.reviews;
-    var listView = document.querySelector('.list-view'); // table
+    var listView = document.querySelector('.list-view');                                          // review list table
 
+    // building frame for the data
     for (var i = 0; i < reviews.length; i++) {
-
       var id = reviews[i].id;
       var title = reviews[i].title;
       var rating = reviews[i].rating;
       var star = '';
+                                                                                                  // getting id, title, rating for each table row (each item)
 
       for (var j = 0; j < rating; j++) {
-
         star += '&#x2605';
-      } // getting id, title, rating for each table row (each item)
+      }
 
       var frame = app.buildFrame(id, star, title);
-      star = ''; // reset the star
+      star = '';                                                                                  // reset the star
       listView.appendChild(frame);
-    } // displaying items in the review list table
+    }                                                                                             // displaying items in the review list table
 
-    var tr = document.querySelectorAll('tr'); // for interactions when clicking the review items
+    // REVIEW LIST ITEM INTERACTION PART
+    var tr = document.querySelectorAll('tr');                                                     // for interactions when clicking the review items
     [].forEach.call(tr, function(obj) {
       var hammer1 = new Hammer(obj);
       hammer1.on('tap', app.detailNavigate);
     });
   },
 
-  // from var frame = app.buildFrame(id, star, title)
+  ///////////////////////// from var frame = app.buildFrame(id, star, title)
+  // REVIEW LIST DISPLAY FRAME(TABLE ROW WITH DATA) BUILDING PART
   buildFrame: function(id, star, ttle) {
+
     var tr = document.createElement('tr');
     tr.setAttribute('id', id);
     tr.setAttribute('class', 'details');
+
     var rating = document.createElement('td');
     rating.setAttribute('id', id);
     rating.setAttribute('class', 'details');
     rating.innerHTML = star;
+
     var title = document.createElement('td');
     title.setAttribute('id', id);
     title.setAttribute('class', 'details');
@@ -204,7 +216,8 @@ var app = {
     tr.appendChild(title);
     return tr;
   },
-
+  ///////////////////////// from hammer1.on('tap', app.detailNavigate);
+  // TRANSITION TO DETAIL PAGE
   detailNavigate: function(ev) {
 
     ev.preventDefault();
@@ -214,33 +227,35 @@ var app = {
     var detailsPage = document.querySelector('#details');
     detailsPage.innerHTML = '';
 
-    // page transition part
+                                                                                                // page transition part
     var nextPage = document.getElementById(href);
     var previous = document.getElementById('list');
 
-    // validation
+    // VALIDATION
     if (nextPage.className !== 'active-page') {
       nextPage.className = 'active-page';
       if (previous.className === 'active-page') {
         previous.className = 'inactive-page';
       }
     }
-    app.getDetails(id);
+    app.getDetails(id);                                                                         // retrieving data
   },
 
+  // REQUESTING SPECIFIC REVIEW DATA
   getDetails: function(id) {
 
     var params = new FormData();
     params.append('uuid', app.uuid);
     params.append('review_id', id);
-
-    // ajax for one review details.
-    app.ajaxCall(app.urlGetReview, params, app.getSpecificReview, app.ajaxErr);
+    app.ajaxCall(app.urlGetReview,
+                 params,
+                 app.getSpecificReview,
+                 app.ajaxErr);                                                                  // ajax for one review details.
   },
 
+  // RETRIEVING DATA
   getSpecificReview: function(ev) {
 
-    //console.log(ev.target);
     var xhr = ev.target;
     if (parseInt(xhr.status) < 300) {
 
@@ -249,13 +264,14 @@ var app = {
       if (data.code == 0) {
 
         var checker = Object.keys(data.review_details);
-        var detailsPage = document.querySelector('#details'); // get the list element
+        var detailsPage = document.querySelector('#details');                                   // get the list element
         var table = document.createElement('table');
         table.setAttribute('class', 'detail-view');
-        detailsPage.appendChild(table); // table for the one review detail created
-        var review_details = data.review_details; //data from the server
+        detailsPage.appendChild(table);                                                         // table for the one review detail created
+        var review_details = data.review_details;                                               //data from the server
 
-        if (checker.length > 0) { // we have previoucs review(s)
+        // we have previoucs review(s)
+        if (checker.length > 0) {
 
           console.log("We have existing reviews: " + data.message);
           table.innerHTML = '';
@@ -263,6 +279,7 @@ var app = {
           // EVERYTHING IS GOOD
         } else {
 
+          // FAILED
           console.log("no existing reviews: " + data.message);
           var tr = document.createElement("tr");
           tr.className = "loading";
@@ -270,19 +287,21 @@ var app = {
           tr.textContent = data.message;
           list.appendChild(tr);
         }
-      } else { // Did not get zero from PHP = NOT OK!
+      } else {
 
+        // FAILED
         app.ajaxErr(data);
       }
-    } else { // xhr Status Error
-
+    } else {
+      // FAILED: xhr Status Error
       app.ajaxErr({
         "message": "Invalid HTTP Response"
       });
     }
   },
 
-  // from app.displayDetails(review_details)
+  ///////////////////////// from app.displayDetails(review_details)
+  // PREPARATION FOR DISPLAYING SPECIFIC REVIEW DETAILS
   displayDetails: function(obj) {
 
     var id = obj.id;
@@ -298,19 +317,19 @@ var app = {
 
     var title = document.createElement('tr');
     title.setAttribute('id', id);
-    title.innerHTML = ttle;
-    // title completed
+    title.innerHTML = ttle;                                                                           // title completed
+
     var rating = document.createElement('tr');
-    rating.innerHTML = star;
-    // rating completed
+    rating.innerHTML = star;                                                                          // rating completed
+
     var text = document.createElement('tr');
-    text.innerHTML = txt;
-    // text completed
+    text.innerHTML = txt;                                                                             // text completed
+
     var image = document.createElement('tr');
     var imgTag = document.createElement('img');
     imgTag.src = img;
-    image.appendChild(imgTag);
-    // image completed
+    image.appendChild(imgTag);                                                                        // image completed
+
     var detailsTable = document.querySelector('.detail-view');
 
     detailsTable.appendChild(title);
@@ -319,7 +338,8 @@ var app = {
     detailsTable.appendChild(text);
   },
 
-  // from cameraButton.addEventListener("click", app.callCamera)
+  ///////////////////////// from cameraButton.addEventListener("click", app.callCamera)
+  // CAMERA FUNCTIONS
   callCamera: function() {
 
     app.imgOptions = {
@@ -333,25 +353,25 @@ var app = {
       cameraDirection: Camera.Direction.FRONT,
       saveToPhotoAlbum: false
     };
-    navigator.camera.getPicture(app.imgSuccess, app.imgFail, app.imgOptions);
+    navigator.camera.getPicture(app.imgSuccess,
+                                app.imgFail,
+                                app.imgOptions);
   },
 
-  // it comes as imageData in base64.
   imgSuccess: function(imageData) {
-    //got an image back from the camera
+                                                                                                    // data comes as imageData in base64.
     var add = document.querySelector('#add');
     app.image.src = "data:image/jpeg;base64," + imageData;
     navigator.camera.cleanup();
   },
-
-  //encodeURIComponent(uri);
 
   imgFail: function(msg) {
     console.log("Failed to get image: " + msg);
   },
 
   addReview: function() {
-    alert('submitted!');
+
+    console.log('submitted!');
     var title = document.querySelector('#title').value;
     var reviewText = document.querySelector('#review_text').value;
     var base64 = encodeURIComponent(app.image.src);
@@ -365,9 +385,11 @@ var app = {
     params.append('rating', rating);
     params.append('review_txt', reviewText);
     params.append('img', base64);
-    console.log(rating);
-    console.log("submitted");
-    app.ajaxCall(app.urlSetNewReview, params, app.reviewSave, app.ajaxErr);
+
+    app.ajaxCall(app.urlSetNewReview,
+                 params,
+                 app.reviewSave,
+                 app.ajaxErr);
   },
 
   reviewSave: function(ev) {
