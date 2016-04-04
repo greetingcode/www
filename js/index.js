@@ -76,6 +76,7 @@ var app = {
     var btn = ev.target;
     var href = btn.href;
     var id = href.split('#')[1];
+    console.log(id);
 
     //****************************************************** page transition part
     var nextPage = document.getElementById(id);
@@ -86,6 +87,7 @@ var app = {
 
     // VALIDATION
                         // when 'add' button is clicked
+                        console.log(nextPage);
     if (nextPage.id === 'add') {
       var navList = document.querySelector('#nav_list');
       var navAdd = document.querySelector('#nav_add');
