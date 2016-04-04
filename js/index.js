@@ -317,10 +317,14 @@ var app = {
 
     var title = document.createElement('tr');
     title.setAttribute('id', id);
-    title.innerHTML = ttle;                                                                           // title completed
+    title.innerHTML = ttle;                                                         // title completed
 
     var rating = document.createElement('tr');
-    rating.innerHTML = star;                                                                          // rating completed
+    var stars ='';
+    for (var j = 0; j < star; j++) {
+      stars += '&#x2605';
+    }
+    rating.innerHTML = stars;                                                                          // rating completed
 
     var text = document.createElement('tr');
     text.innerHTML = txt;                                                                             // text completed
