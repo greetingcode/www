@@ -1,12 +1,20 @@
 'use strict';
 
+/*
+*
+*  Created by Minseok Kim(kim00341)
+*  Completed on 05/04/2016
+*
+* */
+
 var app = {
   loadCount: 0, // count each time certain tag is loaded
-  hammerSrc: 'https://hammerjs.github.io/dist/hammer.js', // hammerjs source
+  hammerSrc: 'js/hammer.min.js', // hammerjs source
   image: null,
   imgOption: null,
   imgData: null,
   uuid: null,
+  rating: 0,
 
   //================================= URLs
   // list page
@@ -20,8 +28,8 @@ var app = {
   //================================= Application Constructors
   initialize: function() {
     //******** NEED TO BE CHANGED AS THE BELOW WHEN RUN ON A DEVICE
-    //document.addEventListener('deviceready', this.onDeviceReady, false);
-    document.addEventListener('DOMContentLoaded', this.onDeviceReady, false);
+    document.addEventListener('deviceready', this.onDeviceReady, false);
+    //document.addEventListener('DOMContentLoaded', this.onDeviceReady, false);
   },
 
   onDeviceReady: function() {
@@ -46,17 +54,26 @@ var app = {
 
       //***************************************************** camera button interactions
       var cameraButton = document.querySelector("#btn");
-      cameraButton.addEventListener("click", app.callCamera);
+      var hammer3 = new Hammer(cameraButton);
+      hammer3.on('tap', app.callCamera);
 
       //***************************************************** submit button interactions
       var submit = document.querySelector('#nav_submit');
-      submit.addEventListener('click', app.addReview);
+      var hammer4 = new Hammer(submit);
+      hammer4.on('tap', app.addReview);
 
+      //***************************************************** star interactions
+
+      var stars = document.querySelectorAll('span.star');
+      [].forEach.call(stars, function(obj){
+        var hammer2 = new Hammer(obj);
+        hammer2.on('tap', app.changeStar);
+      });
 
       app.image = document.querySelector('#image');                               // for deploying an image on add_page after a picture is taken.
-      app.uuid = 4242;
+      //app.uuid = 4242;
       //***** THIS SHOULD BE UUID FOR THE SERVER WHEN RUN ON A DEVICE
-      //app.uuid = device.uuid;                                     // unique id for each device. It becomes a key to the server data exchange
+      app.uuid = device.uuid;                                     // unique id for each device. It becomes a key to the server data exchange
 
       var params = new FormData();                                                // parameter container for communicating with the server
       params.append('uuid', app.uuid);
@@ -68,38 +85,74 @@ var app = {
     }
   },
 
+
+  ///////////////////////// from hammer2.on('tap', app.changeStar)
+  // STAR-CLICK INTERACTION PART
+  changeStar: function(ev) {
+    var spanStar = app.resetStar();
+    var star = ev.target;
+    var ratingValue = star.dataset.value;
+    app.rating = ratingValue;
+
+    var j=4;
+    for(var i=0; i<ratingValue; i++) {
+      if(j>=0) {
+        spanStar[j].style.color = 'darkorange';
+        j--;
+      }
+    }
+  },
+
+  resetStar: function() {
+    var spanStar = document.getElementsByClassName('star');
+    for(var k=0; k<5; k++) {
+      spanStar[k].style.color = '#ccc';
+    }
+    return spanStar;
+  },
+
+
   ///////////////////////// from hammer1.on('tap', app.navigate)
   // PAGE TRANSITION PART
   navigate: function(ev) {
-    var previous = document.querySelector('.active-page').id;
     ev.preventDefault();
+    var previous = document.querySelector('.active-page').id;
     var btn = ev.target;
     var href = btn.href;
     var id = href.split('#')[1];
-    console.log(id);
 
     //****************************************************** page transition part
     var nextPage = document.getElementById(id);
     var prePage = document.getElementById(previous);
-    console.log(previous);
-    console.log('it was previous');
-    console.log(nextPage);
 
-    // VALIDATION
-                        // when 'add' button is clicked
-                        console.log(nextPage);
-    if (nextPage.id === 'add') {
-      var navList = document.querySelector('#nav_list');
-      var navAdd = document.querySelector('#nav_add');
-      var navCancel = document.querySelector('#nav_cancel');
-      var navSubmit = document.querySelector('#nav_submit');
+    app.resetStar();
 
-      navList.classList.add('hidden');
-      navAdd.classList.add('hidden');
-      navCancel.classList.remove('hidden');
-      navSubmit.classList.remove('hidden');
+    // VALIDATION for nav bar interactions
+
+    var navList = document.querySelector('#nav_list');
+    var navAdd = document.querySelector('#nav_add');
+    var navCancel = document.querySelector('#nav_cancel');
+    var navSubmit = document.querySelector('#nav_submit');
+
+    switch (nextPage.id) {
+      case 'add':
+        navList.classList.add('hidden');
+        navAdd.classList.add('hidden');
+        navCancel.classList.remove('hidden');
+        navSubmit.classList.remove('hidden');
+        break;
+      case 'list':
+        navCancel.classList.add('hidden');
+        navSubmit.classList.add('hidden');
+        navList.classList.remove('hidden');
+        navAdd.classList.remove('hidden');
+        break;
+      default:
+          //do nothing
+        break;
     }
-                        // active-page, inactive-page transition; the actual page transition part
+
+    // active-page, inactive-page transition; the actual page transition part
     if (nextPage.className !== 'active-page') {
       nextPage.className = 'active-page';
       if (previous.className !== 'inactive-page') {
@@ -319,7 +372,7 @@ var app = {
 
     var title = document.createElement('tr');
     title.setAttribute('id', id);
-    title.innerHTML = ttle;                                                         // title completed
+    title.innerHTML = ttle;                                                                             // title completed
 
     var rating = document.createElement('tr');
     var stars ='';
@@ -355,9 +408,10 @@ var app = {
       allowEdit: false,
       encodingType: Camera.EncodingType.JPEG,
       mediaType: Camera.MediaType.PICTURE,
-      targetWidth: 200,
+      targetWidth: 250,
       cameraDirection: Camera.Direction.FRONT,
-      saveToPhotoAlbum: false
+      saveToPhotoAlbum: false,
+      correctOrientation: true
     };
     navigator.camera.getPicture(app.imgSuccess,
                                 app.imgFail,
@@ -377,29 +431,37 @@ var app = {
 
   addReview: function() {
 
-    console.log('submitted!');
     var title = document.querySelector('#title').value;
     var reviewText = document.querySelector('#review_text').value;
     var base64 = encodeURIComponent(app.image.src);
-    var rating = document.querySelector('input[name="group-1"]:checked').value;
+    var rating = app.rating;
+    var li = document.querySelector('li.warning');
 
     var params = new FormData();
 
-    params.append('uuid', app.uuid);
-    params.append('action', 'insert'); // for php
-    params.append('title', title);
-    params.append('rating', rating);
-    params.append('review_txt', reviewText);
-    params.append('img', base64);
+    if (title != '' && reviewText != '' && app.rating != 0) {
 
-    app.ajaxCall(app.urlSetNewReview,
-                 params,
-                 app.reviewSave,
-                 app.ajaxErr);
+      params.append('uuid', app.uuid);
+      params.append('action', 'insert'); // for php
+      params.append('title', title);
+      params.append('rating', rating);
+      params.append('review_txt', reviewText);
+      params.append('img', base64);
+
+      app.ajaxCall(app.urlSetNewReview,
+          params,
+          app.reviewSave,
+          app.ajaxErr);
+
+    } else {
+      li.classList.remove('hidden');
+    }
+
   },
 
   reviewSave: function(ev) {
     location.reload();
+    app.rating = 0;
   }
 
 };
